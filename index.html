@@ -281,12 +281,12 @@ th { color: #475569; font-weight: 600; background: #f8fafc; border-bottom: 2px s
 // ==========================================
 // 1. กำหนดค่าเชื่อมต่อ SUPABASE DATABASE
 // ==========================================
-const SUPABASE_URL = "https://boycilknwscfbqawhxfr.supabase.co";
+const SUPABASE_URL = https://boycilknwscfbqawhxfr.supabase.co;
 // นำ Publishable Key (หรือ anon key) จาก Supabase มาวางในอัญประกาศด้านล่างนี้
-const SUPABASE_KEY = "วาง_PUBLISHABLE_KEY_ของคุณที่นี่"; 
+const SUPABASE_KEY = sb_publishable_zGm9gZGZ-e20huzHlVydAg_jOV58FGQ; 
 
 let supabaseClient = null;
-if (typeof supabase !== 'undefined' && SUPABASE_KEY !== "วาง_PUBLISHABLE_KEY_ของคุณที่นี่") {
+if (typeof supabase !== 'undefined' && SUPABASE_KEY !== sb_publishable_zGm9gZGZ-e20huzHlVydAg_jOV58FGQ) {
   supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 }
 
@@ -339,10 +339,6 @@ function removeImage(idx) {
 // ==========================================
 $('reportForm').onsubmit = async (e) => {
   e.preventDefault();
-  
-  if (!supabaseClient) {
-    alert("กรุณาใส่ SUPABASE_KEY ในโค้ด HTML ให้ถูกต้องก่อนใช้งาน");
-    return;
   }
 
   const btn = $('submitBtn');
