@@ -6,6 +6,7 @@
 <meta name="theme-color" content="#2563eb">
 <title>SafeReport โรงเรียน | แจ้งเหตุอย่างปลอดภัย</title>
 <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<!-- Supabase SDK v2 -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 * { box-sizing: border-box; }
@@ -79,7 +80,7 @@ th { color: #475569; font-weight: 600; background: #f8fafc; border-bottom: 2px s
 
 .user-badge { background: #eff6ff; color: #1d4ed8; border: 1px solid #dbeafe; padding: 6px 14px; border-radius: 30px; font-size: 13.5px; font-weight: 500; display: inline-flex; align-items: center; gap: 6px; }
 
-/* Lightbox Modal */
+/* Modal ดูรูปขนาดใหญ่ */
 .modal { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.75); display: flex; align-items: center; justify-content: center; z-index: 100; backdrop-filter: blur(4px); padding: 20px; }
 .modal-img { max-width: 90vw; max-height: 85vh; border-radius: 12px; box-shadow: 0 25px 50px rgba(0,0,0,0.5); }
 .modal-close { position: absolute; top: 20px; right: 25px; color: #fff; font-size: 32px; font-weight: bold; cursor: pointer; }
@@ -282,11 +283,11 @@ th { color: #475569; font-weight: 600; background: #f8fafc; border-bottom: 2px s
 // 1. กำหนดค่าเชื่อมต่อ SUPABASE DATABASE
 // ==========================================
 const SUPABASE_URL = "https://boycilknwscfbqawhxfr.supabase.co";
-// นำ Publishable Key (หรือ anon key) จาก Supabase มาวางในอัญประกาศด้านล่างนี้
-const SUPABASE_KEY = sb_publishable_zGm9gZGZ-e20huzHlVydAg_jOV58FGQ; 
+// *** นำ Publishable Key จาก Supabase มาวางในอัญประกาศด้านล่างนี้ ***
+const SUPABASE_KEY = "วาง_PUBLISHABLE_KEY_ของคุณที่นี่"; 
 
 let supabaseClient = null;
-if (typeof supabase !== 'undefined' && SUPABASE_KEY !== sb_publishable_zGm9gZGZ-e20huzHlVydAg_jOV58FGQ) {
+if (typeof supabase !== 'undefined' && SUPABASE_KEY !== "วาง_PUBLISHABLE_KEY_ของคุณที่นี่") {
   supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 }
 
@@ -413,7 +414,15 @@ async function showAdmin() {
   } else {
     $('loginPage').classList.remove('hidden');
   }
-  
+}
+
+async function handleLogin(e) {
+  e.preventDefault();
+  if (!supabaseClient) {
+    alert("กรุณาใส่ SUPABASE_KEY ในโค้ด HTML ให้ถูกต้องก่อนใช้งาน");
+    return;
+  }
+
   const email = $('userEmail').value;
   const password = $('pass').value;
   const btn = $('loginBtn');
@@ -555,7 +564,6 @@ async function updateStatus(id, newStatus) {
 
     if (error) throw error;
     
-    // อัปเดตข้อมูลในแคช
     const target = cachedReports.find(x => x.id === id);
     if (target) target.status = newStatus;
     renderTable();
@@ -599,12 +607,11 @@ function closeModal() {
   $('imageModal').classList.add('hidden');
 }
 
-// ตรวจสอบ session ตั้งแต่เปิดหน้าเว็บ
 window.addEventListener('DOMContentLoaded', async () => {
   if (supabaseClient) {
     const { data: { session } } = await supabaseClient.auth.getSession();
     if (session) {
-      // สามารถเลือกเปิดหน้า Admin ได้ทันทีหากต้องการ
+      // มี session ล็อกอินอยู่แล้ว
     }
   }
 });
