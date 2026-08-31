@@ -1,162 +1,621 @@
-<section id="loginPage" class="hidden">
-  <div class="card login">
-    <h2>🔐 หลังบ้านผู้ดูแล</h2>
-    <p class="privacy">สำหรับครู/ผู้ดูแลที่ได้รับอนุญาตเท่านั้น</p>
-    <!-- นำเข้า Supabase SDK -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-browser@2"></script>
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#2563eb">
+<title>SafeReport โรงเรียน | แจ้งเหตุอย่างปลอดภัย</title>
+<link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+* { box-sizing: border-box; }
+body { margin: 0; font-family: 'Kanit', Arial, sans-serif; background: #f5f8ff; color: #14213d; }
+header { background: #fff; border-bottom: 1px solid #e7ecf5; position: sticky; top: 0; z-index: 10; box-shadow: 0 2px 10px rgba(0,0,0,0.03); }
+.nav { max-width: 1100px; margin: auto; padding: 13px 18px; display: flex; align-items: center; justify-content: space-between; }
+.logo { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 19px; color: #1e293b; text-decoration: none; }
+.shield { width: 40px; height: 40px; border-radius: 12px; background: linear-gradient(135deg, #2563eb, #4f46e5); display: grid; place-items: center; color: #fff; font-size: 20px; }
+.nav button { border: 0; background: #eef4ff; color: #2563eb; border-radius: 10px; padding: 9px 16px; font: inherit; font-weight: 500; cursor: pointer; transition: all 0.2s; }
+.nav button:hover { background: #dbeafe; }
+.wrap { max-width: 1100px; margin: auto; padding: 35px 18px; }
+
+.hero { background: linear-gradient(135deg, #1d4ed8, #4f46e5); color: #fff; border-radius: 28px; padding: 42px; position: relative; overflow: hidden; box-shadow: 0 20px 55px rgba(37, 99, 235, 0.17); }
+.hero:after { content: ""; position: absolute; width: 300px; height: 300px; border-radius: 50%; background: rgba(255, 255, 255, 0.08); right: -90px; top: -100px; }
+.hero h1 { font-size: clamp(28px, 5vw, 48px); line-height: 1.25; margin: 8px 0 12px; font-weight: 700; }
+.hero p { font-size: 16px; max-width: 650px; line-height: 1.8; color: #e8eeff; margin: 0; }
+.notice { margin-top: 20px; background: rgba(255, 255, 255, 0.15); border: 1px solid rgba(255, 255, 255, 0.25); border-radius: 13px; padding: 13px 16px; font-size: 14px; backdrop-filter: blur(4px); }
+
+.card { background: #fff; border: 1px solid #e6eaf2; border-radius: 20px; padding: 28px; margin-top: 22px; box-shadow: 0 10px 35px rgba(20, 33, 61, 0.04); }
+.grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+.full { grid-column: 1 / -1; }
+label { font-weight: 500; display: block; margin-bottom: 7px; color: #334155; font-size: 15px; }
+input, textarea, select { width: 100%; padding: 12px 14px; border: 1px solid #dce2ee; border-radius: 11px; font: inherit; outline: none; background: #fff; transition: all 0.2s; color: #1e293b; }
+textarea { min-height: 135px; resize: vertical; }
+input:focus, textarea:focus, select:focus { border-color: #2563eb; box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.12); }
+
+.drop { border: 2px dashed #cbd5e1; border-radius: 13px; padding: 22px; text-align: center; color: #64748b; cursor: pointer; transition: background 0.2s; }
+.drop:hover { background: #f8fafc; border-color: #94a3b8; }
+.preview { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 12px; }
+.preview-item { position: relative; display: inline-block; }
+.preview-item img { width: 90px; height: 75px; object-fit: cover; border-radius: 9px; border: 1px solid #e2e8f0; }
+.preview-item .remove-btn { position: absolute; top: -6px; right: -6px; background: #ef4444; color: #fff; border: 0; border-radius: 50%; width: 22px; height: 22px; font-size: 12px; cursor: pointer; display: grid; place-items: center; }
+
+.btn { border: 0; border-radius: 11px; padding: 12px 22px; font: inherit; font-weight: 600; cursor: pointer; transition: all 0.2s; display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
+.btn:disabled { opacity: 0.6; cursor: not-allowed; }
+.primary { background: #2563eb; color: #fff; }
+.primary:hover:not(:disabled) { background: #1d4ed8; }
+.secondary { background: #f1f5f9; color: #475569; }
+.secondary:hover { background: #e2e8f0; }
+.actions { display: flex; justify-content: flex-end; margin-top: 20px; }
+.privacy { font-size: 13.5px; color: #64748b; line-height: 1.6; }
+.success { background: #ecfdf5; color: #065f46; border: 1px solid #a7f3d0; border-radius: 11px; padding: 14px 18px; margin-top: 18px; font-weight: 500; }
+.error-msg { background: #fef2f2; color: #991b1b; border: 1px solid #fecaca; border-radius: 11px; padding: 14px 18px; margin-top: 18px; font-weight: 500; }
+.hidden { display: none !important; }
+
+.login { max-width: 440px; margin: 40px auto; }
+.login h2 { margin-top: 0; font-size: 24px; color: #0f172a; }
+.dashboard { margin-top: 10px; }
+.stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 15px; }
+.stat { background: #fff; border: 1px solid #e6eaf2; border-radius: 16px; padding: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.02); }
+.stat-label { color: #64748b; font-size: 14px; font-weight: 500; }
+.stat b { font-size: 32px; color: #0f172a; display: block; margin-top: 4px; }
+
+.toolbar { display: flex; gap: 12px; margin-bottom: 18px; flex-wrap: wrap; }
+.toolbar input { max-width: 320px; }
+.toolbar select { max-width: 200px; }
+.table-wrap { overflow-x: auto; border-radius: 12px; border: 1px solid #edf2f7; }
+table { border-collapse: collapse; width: 100%; font-size: 14px; background: #fff; }
+th, td { padding: 14px 12px; border-bottom: 1px solid #edf2f7; text-align: left; vertical-align: top; }
+th { color: #475569; font-weight: 600; background: #f8fafc; border-bottom: 2px solid #e2e8f0; }
+.badge { padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; display: inline-block; }
+.st-pending { background: #fff7ed; color: #c2410c; border: 1px solid #ffedd5; }
+.st-progress { background: #eff6ff; color: #1d4ed8; border: 1px solid #dbeafe; }
+.st-done { background: #ecfdf5; color: #047857; border: 1px solid #a7f3d0; }
+.st-reject { background: #fef2f2; color: #b91c1c; border: 1px solid #fecaca; }
+.thumb { width: 55px; height: 45px; object-fit: cover; border-radius: 7px; cursor: pointer; transition: transform 0.2s; border: 1px solid #e2e8f0; }
+.thumb:hover { transform: scale(1.08); }
+.danger { background: #fee2e2; color: #991b1b; padding: 7px 12px; font-size: 13px; border-radius: 8px; border: 0; cursor: pointer; margin-left: 6px; }
+.danger:hover { background: #fca5a5; }
+.small { font-size: 12.5px; color: #64748b; }
+
+.user-badge { background: #eff6ff; color: #1d4ed8; border: 1px solid #dbeafe; padding: 6px 14px; border-radius: 30px; font-size: 13.5px; font-weight: 500; display: inline-flex; align-items: center; gap: 6px; }
+
+/* Lightbox Modal */
+.modal { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.75); display: flex; align-items: center; justify-content: center; z-index: 100; backdrop-filter: blur(4px); padding: 20px; }
+.modal-img { max-width: 90vw; max-height: 85vh; border-radius: 12px; box-shadow: 0 25px 50px rgba(0,0,0,0.5); }
+.modal-close { position: absolute; top: 20px; right: 25px; color: #fff; font-size: 32px; font-weight: bold; cursor: pointer; }
+
+@media(max-width: 768px) {
+  .hero { padding: 28px 22px; }
+  .grid { grid-template-columns: 1fr; }
+  .full { grid-column: auto; }
+  .stats { grid-template-columns: 1fr; }
+  .toolbar { flex-direction: column; }
+  .toolbar input, .toolbar select { max-width: 100%; }
+  .wrap { padding: 20px 14px; }
+  .card { padding: 20px; }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="nav">
+    <a href="#" class="logo" onclick="showReport()"><span class="shield">🛡️</span> SafeReport โรงเรียน</a>
+    <button id="navLoginBtn" onclick="showAdmin()">🔐 สำหรับครู/ผู้ดูแล</button>
+  </div>
+</header>
+
+<main class="wrap">
+  <!-- หน้าสำหรับนักเรียน / บุคลากร แจ้งเหตุ -->
+  <section id="reportPage">
+    <div class="hero">
+      <div style="position:relative; z-index:1">
+        <div style="font-size: 14px; opacity: 0.9; font-weight: 500;">🏫 ระบบแจ้งเหตุและข้อพ้องใจภายในโรงเรียน</div>
+        <h1>แจ้งเหตุอย่างปลอดภัย<br>ให้โรงเรียนช่วยตรวจสอบ</h1>
+        <p>สำหรับแจ้งพฤติกรรมหรือเหตุการณ์ที่ควรให้โรงเรียนตรวจสอบ เช่น การกลั่นแกล้ง ทะเลาะวิวาท ทำลายทรัพย์สิน คุกคาม หรือเหตุด้านความปลอดภัย</p>
+        <div class="notice">🔒 รายงานจะส่งตรงไปยังระบบฐานข้อมูลผู้ดูแลที่ได้รับอนุญาตเท่านั้น และไม่แสดงข้อมูลผู้แจ้งต่อสาธารณะ</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2 style="margin-top:0; font-size:22px; color:#0f172a;">📝 แบบฟอร์มแจ้งเหตุ</h2>
+      <p class="privacy">กรุณาให้ข้อมูลตามข้อเท็จจริง หลีกเลี่ยงการใส่ข้อมูลส่วนตัวที่ไม่จำเป็น ระบบนี้ไม่ใช่พื้นที่สำหรับประจาน ข้อมูลจะถูกเก็บเป็นความลับเพื่อการสอบสวนอย่างเป็นธรรม</p>
+      
+      <form id="reportForm">
+        <div class="grid">
+          <div>
+            <label>ประเภทเหตุการณ์ <span style="color:#ef4444">*</span></label>
+            <select id="type" required>
+              <option value="">-- เลือกประเภทเหตุการณ์ --</option>
+              <option>การกลั่นแกล้ง / รังแก (Bullying)</option>
+              <option>ทะเลาะวิวาท / ความรุนแรง</option>
+              <option>ทำลายทรัพย์สินโรงเรียน</option>
+              <option>การคุกคาม / ข่มขู่ / ลวนลาม</option>
+              <option>การกระทำผิดกฎระเบียบโรงเรียน</option>
+              <option>เหตุด้านความปลอดภัย / อุบัติเหตุ</option>
+              <option>อื่น ๆ</option>
+            </select>
+          </div>
+          <div>
+            <label>วันที่เกิดเหตุ <span style="color:#ef4444">*</span></label>
+            <input id="date" type="date" required>
+          </div>
+          <div class="full">
+            <label>สถานที่เกิดเหตุ <span style="color:#ef4444">*</span></label>
+            <input id="place" required placeholder="เช่น อาคาร 2 ชั้น 3 / สนามฟุตบอล / ห้องน้ำหลังโรงอาหาร">
+          </div>
+          <div class="full">
+            <label>รายละเอียดเหตุการณ์ <span style="color:#ef4444">*</span></label>
+            <textarea id="message" required placeholder="อธิบายว่าเกิดอะไรขึ้น เมื่อใด ใครเกี่ยวข้อง และรายละเอียดที่ช่วยให้โรงเรียนดำเนินการตรวจสอบได้อย่างชัดเจน"></textarea>
+          </div>
+          <div class="full">
+            <label>ชื่อผู้ถูกรายงาน (ถ้าทราบ/ระบุเท่าที่จำเป็น)</label>
+            <input id="person" placeholder="ระบุชื่อ-นามสกุล หรือชั้นเรียน (ถ้ามี)">
+            <p class="small">ข้อมูลนี้จะไม่ถูกแสดงสาธารณะ ใช้เฉพาะสำหรับการสืบสวนภายในเท่านั้น</p>
+          </div>
+          <div class="full">
+            <label>รูปภาพ / หลักฐานประกอบ</label>
+            <div class="drop" onclick="document.getElementById('files').click()">
+              📷 <b>คลิกเพื่อเลือกรูปภาพหลักฐาน</b><br>
+              <span class="small">รองรับไฟล์รูปภาพ JPG, PNG (สามารถเลือกได้หลายรูป)</span>
+            </div>
+            <input id="files" type="file" accept="image/*" multiple hidden>
+            <div id="preview" class="preview"></div>
+          </div>
+          <div>
+            <label>การติดต่อกลับ</label>
+            <select id="contact">
+              <option value="ไม่ต้องการ (แจ้งแบบไม่ระบุตัวตน)">ไม่ต้องการ (แจ้งแบบไม่ระบุตัวตน)</option>
+              <option value="ต้องการให้ติดต่อกลับ">ต้องการให้ติดต่อกลับ</option>
+            </select>
+          </div>
+          <div>
+            <label>ข้อมูลติดต่อ (ถ้าเลือกให้ติดต่อกลับ)</label>
+            <input id="contactInfo" placeholder="เบอร์โทรศัพท์ หรือ Line ID / Email">
+          </div>
+        </div>
+
+        <div class="actions">
+          <button type="submit" id="submitBtn" class="btn primary">ส่งรายงานอย่างปลอดภัย →</button>
+        </div>
+        
+        <div id="successMsg" class="success hidden">✓ ส่งรายงานเรียบร้อยแล้ว ขอบคุณที่ร่วมสร้างสังคมโรงเรียนที่ปลอดภัย</div>
+        <div id="errorMsg" class="error-msg hidden"></div>
+      </form>
+    </div>
+  </section>
+
+  <!-- หน้าเข้าสู่ระบบสำหรับผู้ตรวจสอบแต่ละคน -->
+  <section id="loginPage" class="hidden">
+    <div class="card login">
+      <h2>🔐 เข้าสู่ระบบผู้ตรวจสอบ</h2>
+      <p class="privacy">สำหรับครูและเจ้าหน้าที่ผู้ดูแลที่ได้รับสิทธิ์เท่านั้น (ใช้ระบบตรวจสอบรายบุคคล)</p>
+      
+      <form id="loginForm" onsubmit="handleLogin(event)">
+        <div style="margin-bottom: 14px;">
+          <label>อีเมลผู้ดูแล (Email)</label>
+          <input id="userEmail" type="email" placeholder="เช่น teacher@school.ac.th" required>
+        </div>
+        
+        <div style="margin-bottom: 18px;">
+          <label>รหัสผ่าน (Password)</label>
+          <input id="pass" type="password" placeholder="กรอกรหัสผ่านประจำตัว" required>
+        </div>
+        
+        <div class="actions" style="margin-top:10px;">
+          <button type="submit" id="loginBtn" class="btn primary" style="width:100%;">เข้าสู่ระบบผู้ดูแล</button>
+        </div>
+      </form>
+      
+      <div id="loginError" class="error-msg hidden"></div>
+      
+      <div style="margin-top: 25px; padding-top: 15px; border-top: 1px solid #edf2f7; text-align: center;">
+        <button class="btn secondary" style="width:100%" onclick="showReport()">← กลับหน้าแจ้งเหตุ</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- หน้า Admin Dashboard สำหรับผู้ตรวจสอบ -->
+  <section id="adminPage" class="hidden">
+    <div class="dashboard">
+      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+        <div>
+          <div style="color:#2563eb; font-weight:600; font-size:13px; letter-spacing:0.5px;">INSPECTOR DASHBOARD</div>
+          <h2 style="margin:2px 0 0 0; font-size:24px;">รายการแจ้งเหตุทั้งหมด</h2>
+        </div>
+        <div style="display:flex; align-items:center; gap:10px;">
+          <span class="user-badge" id="currentUserDisplay">👤 <span id="userEmailTxt">user@school.ac.th</span></span>
+          <button class="btn secondary" onclick="handleLogout()">ออกจากระบบ</button>
+        </div>
+      </div>
+
+      <div class="stats">
+        <div class="stat"><span class="stat-label">รายงานทั้งหมด</span><b id="totalCount">0</b></div>
+        <div class="stat"><span class="stat-label">รอตรวจสอบ</span><b id="pendingCount" style="color:#c2410c;">0</b></div>
+        <div class="stat"><span class="stat-label">ตรวจสอบแล้ว</span><b id="checkedCount" style="color:#047857;">0</b></div>
+      </div>
+
+      <div class="card">
+        <div class="toolbar">
+          <input id="searchInput" placeholder="🔎 ค้นหา ประเภท/สถานที่/รายละเอียด..." oninput="renderTable()">
+          <select id="filterStatus" onchange="renderTable()">
+            <option value="">ทุกสถานะ</option>
+            <option value="รอตรวจสอบ">รอตรวจสอบ</option>
+            <option value="กำลังตรวจสอบ">กำลังตรวจสอบ</option>
+            <option value="ตรวจสอบแล้ว">ตรวจสอบแล้ว</option>
+            <option value="ไม่พบการกระทำผิด">ไม่พบการกระทำผิด</option>
+          </select>
+          <button class="btn secondary" onclick="fetchReports()" style="margin-left:auto;">🔄 รีเฟรช</button>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th style="width:120px;">วันที่ส่ง</th>
+                <th style="width:150px;">ประเภท / สถานที่</th>
+                <th>รายละเอียด</th>
+                <th style="width:120px;">ผู้ถูกรายงาน</th>
+                <th style="width:100px;">หลักฐาน</th>
+                <th style="width:120px;">สถานะ</th>
+                <th style="width:140px; text-align:center;">จัดการ</th>
+              </tr>
+            </thead>
+            <tbody id="reportsTbody">
+              <tr><td colspan="7" style="text-align:center; padding:30px; color:#64748b;">กำลังโหลดข้อมูล...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<!-- Lightbox สำหรับดูรูปขนาดใหญ่ -->
+<div id="imageModal" class="modal hidden" onclick="closeModal()">
+  <span class="modal-close">&times;</span>
+  <img id="modalImg" class="modal-img" src="" onclick="event.stopPropagation()">
+</div>
 
 <script>
-// ใส่ URL และ Key ที่คัดลอกจากข้อ 1
-const SUPABASE_URL = https://boycilknwscfbqawhxfr.supabase.co;
-const SUPABASE_KEY = sb_publishable_zGm9gZGZ-e20huzHlVydAg_jOV58FGQ;
-const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+// ==========================================
+// 1. กำหนดค่าเชื่อมต่อ SUPABASE DATABASE
+// ==========================================
+const SUPABASE_URL = "https://boycilknwscfbqawhxfr.supabase.co";
+// นำ Publishable Key (หรือ anon key) จาก Supabase มาวางในอัญประกาศด้านล่างนี้
+const SUPABASE_KEY = "วาง_PUBLISHABLE_KEY_ของคุณที่นี่"; 
 
-const $ = x => document.getElementById(x);
-let images = [];
+let supabaseClient = null;
+if (typeof supabase !== 'undefined' && SUPABASE_KEY !== "วาง_PUBLISHABLE_KEY_ของคุณที่นี่") {
+  supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+}
 
-files.onchange = async e => {
-  images = [];
-  for (const f of e.target.files) images.push(await read(f));
-  preview.innerHTML = images.map(i => `<img src="${i}">`).join("");
+const $ = id => document.getElementById(id);
+let uploadedImages = [];
+let cachedReports = [];
+
+// ตั้งค่าวันที่เกิดเหตุเป็นวันปัจจุบันโดยอัตโนมัติ
+$('date').valueAsDate = new Date();
+
+// ==========================================
+// 2. จัดการรูปภาพหลักฐาน (Base64)
+// ==========================================
+$('files').onchange = async (e) => {
+  for (const file of e.target.files) {
+    if (file.size > 3 * 1024 * 1024) {
+      alert("ไฟล์รูปภาพ " + file.name + " มีขนาดใหญ่เกิน 3MB");
+      continue;
+    }
+    const base64 = await readAsBase64(file);
+    uploadedImages.push(base64);
+  }
+  renderImagePreviews();
 };
 
-function read(f) {
-  return new Promise(r => {
-    const x = new FileReader();
-    x.onload = () => r(x.result);
-    x.readAsDataURL(f);
+function readAsBase64(file) {
+  return new Promise(resolve => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.readAsDataURL(file);
   });
 }
 
-function showAdmin() {
-  reportPage.classList.add("hidden");
-  loginPage.classList.remove("hidden");
-  adminPage.classList.add("hidden");
+function renderImagePreviews() {
+  $('preview').innerHTML = uploadedImages.map((img, idx) => `
+    <div class="preview-item">
+      <img src="${img}">
+      <button type="button" class="remove-btn" onclick="removeImage(${idx})">✕</button>
+    </div>
+  `).join("");
 }
 
-// 1. ส่งข้อมูลจากอุปกรณ์ใดก็ได้ เข้า Cloud Database
-form.onsubmit = async e => {
+function removeImage(idx) {
+  uploadedImages.splice(idx, 1);
+  renderImagePreviews();
+}
+
+// ==========================================
+// 3. ระบบส่งรายงาน (สำหรับคนทั่วไปจากทุกเครื่อง)
+// ==========================================
+$('reportForm').onsubmit = async (e) => {
   e.preventDefault();
   
+  if (!supabaseClient) {
+    alert("กรุณาใส่ SUPABASE_KEY ในโค้ด HTML ให้ถูกต้องก่อนใช้งาน");
+    return;
+  }
+
+  const btn = $('submitBtn');
+  btn.disabled = true;
+  btn.innerText = "กำลังส่งข้อมูล...";
+  $('errorMsg').classList.add('hidden');
+  $('successMsg').classList.add('hidden');
+
   const payload = {
-    type: type.value,
-    date: date.value,
-    place: place.value,
-    message: message.value,
-    person: person.value,
-    imgs: images,
+    type: $('type').value,
+    date: $('date').value,
+    place: $('place').value,
+    message: $('message').value,
+    person: $('person').value || null,
+    imgs: uploadedImages,
     status: "รอตรวจสอบ"
   };
 
-  const { error } = await supabase.from('reports').insert([payload]);
+  try {
+    const { data, error } = await supabaseClient.from('reports').insert([payload]);
 
-  if (error) {
-    alert("เกิดข้อผิดพลาดในการส่งข้อมูล: " + error.message);
-    return;
+    if (error) throw error;
+
+    $('reportForm').reset();
+    $('date').valueAsDate = new Date();
+    uploadedImages = [];
+    renderImagePreviews();
+    $('successMsg').classList.remove('hidden');
+    
+    setTimeout(() => {
+      $('successMsg').classList.add('hidden');
+    }, 6000);
+
+  } catch (err) {
+    console.error(err);
+    $('errorMsg').innerText = "เกิดข้อผิดพลาดในการส่งรายงาน: " + (err.message || err);
+    $('errorMsg').classList.remove('hidden');
+  } finally {
+    btn.disabled = false;
+    btn.innerText = "ส่งรายงานอย่างปลอดภัย →";
   }
-
-  form.reset();
-  images = [];
-  preview.innerHTML = "";
-  success.classList.remove("hidden");
-  setTimeout(() => success.classList.add("hidden"), 5000);
 };
 
-// 2. ล็อกอินด้วย Email & Password ของผู้ตรวจแต่ละคน
-async function login() {
-  const email = $("userEmail").value;
-  const password = $("pass").value;
-
-  const { data, error } = await supabase.auth.signInWithPassword({
-    email: email,
-    password: password
-  });
-
-  if (error) {
-    alert("อีเมลหรือรหัสผ่านไม่ถูกต้อง");
-  } else {
-    loginPage.classList.add("hidden");
-    adminPage.classList.remove("hidden");
-    render();
-  }
+// ==========================================
+// 4. ระบบการเปลี่ยนหน้า & Authenticate
+// ==========================================
+function showReport() {
+  $('reportPage').classList.remove('hidden');
+  $('loginPage').classList.add('hidden');
+  $('adminPage').classList.add('hidden');
 }
 
-async function logout() {
-  await supabase.auth.signOut();
-  adminPage.classList.add("hidden");
-  reportPage.classList.remove("hidden");
-}
-
-// 3. ดึงรายการข้อมูลกลางมาแสดง
-async function render() {
-  let { data: reports, error } = await supabase
-    .from('reports')
-    .select('*')
-    .order('created_at', { ascending: false });
-
-  if (error) {
-    alert("ไม่สามารถดึงข้อมูลได้: " + error.message);
+async function showAdmin() {
+  $('reportPage').classList.add('hidden');
+  $('loginPage').classList.add('hidden');
+  
+  if (!supabaseClient) {
+    $('loginPage').classList.remove('hidden');
     return;
   }
 
-  let q = search.value.toLowerCase();
-  let f = filter.value;
-  let r = reports.filter(x => 
-    (!q || (x.type + x.place + x.message + (x.person || '')).toLowerCase().includes(q)) &&
-    (!f || x.status === f)
-  );
-
-  total.textContent = reports.length;
-  pending.textContent = reports.filter(x => x.status === "รอตรวจสอบ").length;
-  checked.textContent = reports.filter(x => x.status === "ตรวจสอบแล้ว").length;
-
-  tbody.innerHTML = r.length ? r.map(x => `
-    <tr>
-      <td>${new Date(x.created_at).toLocaleString("th-TH")}</td>
-      <td>${esc(x.type)}<br><span class="small">${esc(x.place)}</span></td>
-      <td style="white-space:normal;min-width:230px">${esc(x.message)}</td>
-      <td>${esc(x.person || "ไม่ได้ระบุ")}</td>
-      <td>${x.imgs?.length ? x.imgs.map(i => `<img class="thumb" src="${i}">`).join("") : "—"}</td>
-      <td><span class="badge ${x.status === "ตรวจสอบแล้ว" ? "done" : x.status === "ไม่พบการกระทำผิด" ? "reject" : ""}">${x.status}</span></td>
-      <td>
-        <select onchange="st(${x.id}, this.value)">
-          <option ${x.status === 'รอตรวจสอบ' ? 'selected' : ''}>รอตรวจสอบ</option>
-          <option ${x.status === 'กำลังตรวจสอบ' ? 'selected' : ''}>กำลังตรวจสอบ</option>
-          <option ${x.status === 'ตรวจสอบแล้ว' ? 'selected' : ''}>ตรวจสอบแล้ว</option>
-          <option ${x.status === 'ไม่พบการกระทำผิด' ? 'selected' : ''}>ไม่พบการกระทำผิด</option>
-        </select>
-        <button class="btn danger" onclick="del(${x.id})">ลบ</button>
-      </td>
-    </tr>
-  `).join("") : `<tr><td colspan="7" style="text-align:center;padding:35px;color:#667085">ยังไม่มีรายงาน</td></tr>`;
-}
-
-// 4. อัปเดตสถานะ หรือ ลบรายการ
-async function st(id, s) {
-  const { error } = await supabase.from('reports').update({ status: s }).eq('id', id);
-  if (!error) render();
-}
-
-async function del(id) {
-  if (confirm("ลบรายงานนี้หรือไม่?")) {
-    const { error } = await supabase.from('reports').delete().eq('id', id);
-    if (!error) render();
+  // ตรวจสอบ session เดิมว่าล็อกอินอยู่แล้วหรือไม่
+  const { data: { session } } = await supabaseClient.auth.getSession();
+  if (session) {
+    $('userEmailTxt').innerText = session.user.email;
+    $('adminPage').classList.remove('hidden');
+    fetchReports();
+  } else {
+    $('loginPage').classList.remove('hidden');
   }
 }
 
-function esc(s) {
-  return String(s || "").replace(/[&<>"']/g, m => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;" }[m]));
+async function handleLogin(e) {
+  e.preventDefault();
+  if (!supabaseClient) {
+    alert("กรุณาใส่ SUPABASE_KEY ในโค้ด HTML ให้ถูกต้องก่อนใช้งาน");
+    return;
+  }
+
+  const email = $('userEmail').value;
+  const password = $('pass').value;
+  const btn = $('loginBtn');
+  
+  btn.disabled = true;
+  btn.innerText = "กำลังตรวจสอบ...";
+  $('loginError').classList.add('hidden');
+
+  try {
+    const { data, error } = await supabaseClient.auth.signInWithPassword({
+      email: email,
+      password: password
+    });
+
+    if (error) throw error;
+
+    $('userEmailTxt').innerText = data.user.email;
+    $('loginPage').classList.add('hidden');
+    $('adminPage').classList.remove('hidden');
+    $('pass').value = "";
+    fetchReports();
+
+  } catch (err) {
+    $('loginError').innerText = "เข้าสู่ระบบไม่สำเร็จ: " + (err.message || "อีเมลหรือรหัสผ่านไม่ถูกต้อง");
+    $('loginError').classList.remove('hidden');
+  } finally {
+    btn.disabled = false;
+    btn.innerText = "เข้าสู่ระบบผู้ดูแล";
+  }
 }
+
+async function handleLogout() {
+  if (supabaseClient) {
+    await supabaseClient.auth.signOut();
+  }
+  showReport();
+}
+
+// ==========================================
+// 5. ดึงและแสดงรายการรายงานสำหรับผู้ตรวจ
+// ==========================================
+async function fetchReports() {
+  if (!supabaseClient) return;
+
+  $('reportsTbody').innerHTML = `<tr><td colspan="7" style="text-align:center; padding:30px; color:#64748b;">กำลังดึงข้อมูลล่าสุด...</td></tr>`;
+
+  try {
+    const { data, error } = await supabaseClient
+      .from('reports')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+
+    cachedReports = data || [];
+    renderTable();
+
+  } catch (err) {
+    console.error(err);
+    $('reportsTbody').innerHTML = `<tr><td colspan="7" style="text-align:center; padding:30px; color:#ef4444;">ไม่สามารถโหลดข้อมูลได้: ${escapeHtml(err.message)}</td></tr>`;
+  }
+}
+
+function renderTable() {
+  const query = $('searchInput').value.toLowerCase().trim();
+  const filter = $('filterStatus').value;
+
+  const filtered = cachedReports.filter(item => {
+    const matchQuery = !query || 
+      (item.type || '').toLowerCase().includes(query) ||
+      (item.place || '').toLowerCase().includes(query) ||
+      (item.message || '').toLowerCase().includes(query) ||
+      (item.person || '').toLowerCase().includes(query);
+    
+    const matchStatus = !filter || item.status === filter;
+
+    return matchQuery && matchStatus;
+  });
+
+  // อัปเดตการนับจำนวน
+  $('totalCount').innerText = cachedReports.length;
+  $('pendingCount').innerText = cachedReports.filter(x => x.status === "รอตรวจสอบ").length;
+  $('checkedCount').innerText = cachedReports.filter(x => x.status === "ตรวจสอบแล้ว").length;
+
+  if (filtered.length === 0) {
+    $('reportsTbody').innerHTML = `<tr><td colspan="7" style="text-align:center; padding:35px; color:#64748b;">ไม่พบข้อมูลรายงาน</td></tr>`;
+    return;
+  }
+
+  $('reportsTbody').innerHTML = filtered.map(item => {
+    const createdDate = new Date(item.created_at).toLocaleString("th-TH", {
+      year: '2-digit', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
+    });
+
+    const statusClass = 
+      item.status === 'รอตรวจสอบ' ? 'st-pending' :
+      item.status === 'กำลังตรวจสอบ' ? 'st-progress' :
+      item.status === 'ตรวจสอบแล้ว' ? 'st-done' : 'st-reject';
+
+    const imagesHtml = (item.imgs && item.imgs.length > 0)
+      ? item.imgs.map(imgSrc => `<img class="thumb" src="${imgSrc}" onclick="openModal('${imgSrc}')">`).join(" ")
+      : '<span style="color:#94a3b8;">ไม่มี</span>';
+
+    return `
+      <tr>
+        <td style="font-size:12.5px; color:#64748b;">${createdDate}</td>
+        <td>
+          <b>${escapeHtml(item.type)}</b>
+          <div class="small" style="color:#2563eb;">📍 ${escapeHtml(item.place)}</div>
+        </td>
+        <td style="white-space:pre-wrap; max-width:280px;">${escapeHtml(item.message)}</td>
+        <td>${item.person ? escapeHtml(item.person) : '<span style="color:#94a3b8;">-</span>'}</td>
+        <td>${imagesHtml}</td>
+        <td><span class="badge ${statusClass}">${escapeHtml(item.status)}</span></td>
+        <td style="text-align:center;">
+          <select onchange="updateStatus(${item.id}, this.value)" style="padding:4px 8px; font-size:12px; width:auto; margin-bottom:4px;">
+            <option value="รอตรวจสอบ" ${item.status==='รอตรวจสอบ'?'selected':''}>รอตรวจสอบ</option>
+            <option value="กำลังตรวจสอบ" ${item.status==='กำลังตรวจสอบ'?'selected':''}>กำลังตรวจสอบ</option>
+            <option value="ตรวจสอบแล้ว" ${item.status==='ตรวจสอบแล้ว'?'selected':''}>ตรวจสอบแล้ว</option>
+            <option value="ไม่พบการกระทำผิด" ${item.status==='ไม่พบการกระทำผิด'?'selected':''}>ไม่พบการกระทำผิด</option>
+          </select>
+          <button class="danger" onclick="deleteReport(${item.id})">ลบ</button>
+        </td>
+      </tr>
+    `;
+  }).join("");
+}
+
+// ==========================================
+// 6. การอัปเดตและลบข้อมูล
+// ==========================================
+async function updateStatus(id, newStatus) {
+  if (!supabaseClient) return;
+  try {
+    const { error } = await supabaseClient
+      .from('reports')
+      .update({ status: newStatus })
+      .eq('id', id);
+
+    if (error) throw error;
+    
+    // อัปเดตข้อมูลในแคช
+    const target = cachedReports.find(x => x.id === id);
+    if (target) target.status = newStatus;
+    renderTable();
+
+  } catch (err) {
+    alert("ไม่สามารถอัปเดตสถานะได้: " + err.message);
+  }
+}
+
+async function deleteReport(id) {
+  if (!confirm("คุณแน่ใจหรือไม่ว่าต้องการลบรายการแจ้งเหตุนี้?")) return;
+  if (!supabaseClient) return;
+
+  try {
+    const { error } = await supabaseClient
+      .from('reports')
+      .delete()
+      .eq('id', id);
+
+    if (error) throw error;
+
+    cachedReports = cachedReports.filter(x => x.id !== id);
+    renderTable();
+
+  } catch (err) {
+    alert("ไม่สามารถลบข้อมูลได้: " + err.message);
+  }
+}
+
+// Helper Functions
+function escapeHtml(str) {
+  return String(str || "").replace(/[&<>"']/g, m => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;" }[m]));
+}
+
+function openModal(imgSrc) {
+  $('modalImg').src = imgSrc;
+  $('imageModal').classList.remove('hidden');
+}
+
+function closeModal() {
+  $('imageModal').classList.add('hidden');
+}
+
+// ตรวจสอบ session ตั้งแต่เปิดหน้าเว็บ
+window.addEventListener('DOMContentLoaded', async () => {
+  if (supabaseClient) {
+    const { data: { session } } = await supabaseClient.auth.getSession();
+    if (session) {
+      // สามารถเลือกเปิดหน้า Admin ได้ทันทีหากต้องการ
+    }
+  }
+});
 </script>
-    <!-- เพิ่มช่องกรอก อีเมล -->
-    <label>อีเมลผู้ดูแล</label>
-    <input id="userEmail" type="email" placeholder="เช่น teacher@school.com">
-    
-    <label style="margin-top:10px">รหัสผ่าน</label>
-    <input id="pass" type="password" placeholder="กรอกรหัสผ่าน">
-    
-    <div class="actions">
-      <button class="btn primary" onclick="login()">เข้าสู่ระบบ</button>
-    </div>
-  </div>
-</section>
+</body>
+</html>
