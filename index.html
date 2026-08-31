@@ -413,15 +413,7 @@ async function showAdmin() {
   } else {
     $('loginPage').classList.remove('hidden');
   }
-}
-
-async function handleLogin(e) {
-  e.preventDefault();
-  if (!supabaseClient) {
-    alert("กรุณาใส่ SUPABASE_KEY ในโค้ด HTML ให้ถูกต้องก่อนใช้งาน");
-    return;
-  }
-
+  
   const email = $('userEmail').value;
   const password = $('pass').value;
   const btn = $('loginBtn');
